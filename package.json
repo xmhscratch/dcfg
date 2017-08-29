@@ -1,0 +1,23 @@
+{
+  "name": "dcfg",
+  "version": "1.0.0",
+  "description": "Distributed configuration between multiple nodejs applications",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/xmhscratch/dcfg.git"
+  },
+  "keywords": [
+    "config",
+    "distributed"
+  ],
+  "author": "xmhscratch",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xmhscratch/dcfg/issues"
+  },
+  "homepage": "https://github.com/xmhscratch/dcfg#readme"
+}
