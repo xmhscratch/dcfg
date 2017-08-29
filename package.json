@@ -4,7 +4,7 @@
   "description": "Distributed configuration between multiple nodejs applications",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node ./tests/index"
   },
   "repository": {
     "type": "git",
@@ -19,5 +19,14 @@
   "bugs": {
     "url": "https://github.com/xmhscratch/dcfg/issues"
   },
-  "homepage": "https://github.com/xmhscratch/dcfg#readme"
+  "homepage": "https://github.com/xmhscratch/dcfg#readme",
+  "dependencies": {
+    "dotenv": "^4.0.0",
+    "flatory": "0.0.4",
+    "lodash": "^4.17.4",
+    "node-couchdb": "^1.2.0"
+  },
+  "devDependencies": {
+    "prettyoutput": "^1.1.1"
+  }
 }
