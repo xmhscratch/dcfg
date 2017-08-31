@@ -1,26 +1,36 @@
 const _ = require('lodash')
 const __ = require('flatory')
 
+const flat = require('flat')
 const dotenv = require('dotenv')
+const async = require('async')
+
 const path = require('path')
 const fs = require('fs')
+const EventEmitter = require('events')
 
-class Dcfg {
-    constructor(options = {}) {
+class Dcfg extends EventEmitter {
+
+    constructor(options = {}, done = _.noop) {
         this._values = {}
 
+        const nodeEnv = this.getNodeEnv()
         _.defaults(this, options, {
+            // [shared, shared, ..., private]
+            dbs: [],
             baseDir: __dirname,
             evalName: 'config',
-            store: null
+            store: null,
         })
 
+        this._adapter = new Adapter(this.store)
+
         if (!global._dcfg_loaded) {
-            this.initialize()
+            this.initialize(done)
             global._dcfg_loaded = true
         }
 
-        return this._values
+        return this
     }
 
     getBasePath() {
@@ -69,11 +79,12 @@ class Dcfg {
             const baseConfigItems = __(configPath).getChildItems(/\.(js|json)$/g)
             this.loadConfigItems(configMap, baseConfigItems)
 
-            if (!_.isEmpty(process.env.NODE_ENV) && !_.isEqual(process.env.NODE_ENV, "local")) {
-                const scopeDir = path.join(configPath, process.env.NODE_ENV)
+            const nodeEnv = this.getNodeEnv()
+            if (!_.isEqual(nodeEnv, "local")) {
+                const scopeDir = path.join(configPath, nodeEnv)
                 fs.existsSync(scopeDir)
 
-                const scopeConfigItems = __(configPath, process.env.NODE_ENV)
+                const scopeConfigItems = __(configPath, nodeEnv)
                     .getChildItems(/\.(js|json)$/g)
                 this.loadConfigItems(configMap, scopeConfigItems)
             }
@@ -84,7 +95,11 @@ class Dcfg {
         return configMap
     }
 
-    initialize() {
+    getNodeEnv() {
+        return process.env.NODE_ENV || 'local'
+    }
+
+    initialize(done) {
         const basePath = this.getBasePath()
 
         _.forEach(process.mainModule.paths, (nodeModulePath) => {
@@ -118,6 +133,22 @@ class Dcfg {
             }
         }, this)
 
+        async.mapSeries(this.dbs, (dbName, callback) => {
+            return this._adapter(dbName, nodeEnv)
+                .read((error, values) => {
+                    if (error) {
+                        this.emit('error', error)
+                    } else {
+                        _.extend(this._values, values)
+                    }
+
+                    return callback(null, error)
+                })
+        }, (noop, error) => {
+            this.emit('ready', this._values)
+            return done(error, this._values)
+        })
+
         return this
     }
 
@@ -126,6 +157,14 @@ class Dcfg {
     }
 
     set(path, value) {
+        this._adapter(
+            // save to private config db
+            _.last(this.dbs),
+            // surfix enviroment
+            this.getNodeEnv()
+        ).write(path, value)
+
+        this.emit('saved', path, value)
         return _.set(this._values, path, value)
     }
 }
