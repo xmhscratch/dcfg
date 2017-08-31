@@ -19,6 +19,7 @@ class Dcfg {
             this.initialize()
             global._dcfg_loaded = true
         }
+
         return this._values
     }
 
@@ -34,52 +35,51 @@ class Dcfg {
         return path.dirname(nodeModuleBasePath) || __dirname
     }
 
-    // readScope(filePath) {
-    //     return {
-    //         scope: path
-    //             .relative(path.dirname(filePath), filePath)
-    //             .replace(path.extname(filePath), '')
-    //             .replace(path.sep, '.'),
-    //         config: require(filePath)
-    //     }
-    // }
+    readScope(filePath) {
+        return {
+            scope: path
+                .relative(path.dirname(filePath), filePath)
+                .replace(path.extname(filePath), '')
+                .replace(path.sep, '.'),
+            config: require(filePath)
+        }
+    }
 
-    // loadConfigItems(configMap, configItems) {
-    //     configMap = (configMap || {})
+    loadConfigItems(configMap, configItems) {
+        configMap = (configMap || {})
 
-    //     _.forEach(configItems, (filePath) => {
-    //         const configScope = config.readScope(filePath)
+        _.forEach(configItems, (filePath) => {
+            const configScope = this.readScope(filePath)
 
-    //         _.defaultsDeep(
-    //             configScope.config,
-    //             configMap[configScope.scope]
-    //         )
+            _.defaultsDeep(
+                configScope.config,
+                configMap[configScope.scope]
+            )
 
-    //         configMap[configScope.scope] = configScope.config
-    //     }, this)
+            configMap[configScope.scope] = configScope.config
+        }, this)
 
-    //     return configMap
-    // }
+        return configMap
+    }
 
     parse(configPath) {
-        console.log(configPath)
         const configMap = {}
 
-        // try {
-        //     const baseConfigItems = __(configPath).getChildItems(/\.(js|json)$/g)
-        //     configMap = config.loadConfigItems(configMap, baseConfigItems)
+        try {
+            const baseConfigItems = __(configPath).getChildItems(/\.(js|json)$/g)
+            this.loadConfigItems(configMap, baseConfigItems)
 
-        //     if (!_.isEmpty(process.env.NODE_ENV) && !_.isEqual(process.env.NODE_ENV, "local")) {
-        //         const scopeDir = path.join(configPath, process.env.NODE_ENV)
-        //         fs.existsSync(scopeDir)
+            if (!_.isEmpty(process.env.NODE_ENV) && !_.isEqual(process.env.NODE_ENV, "local")) {
+                const scopeDir = path.join(configPath, process.env.NODE_ENV)
+                fs.existsSync(scopeDir)
 
-        //         const scopeConfigItems = __(configPath, process.env.NODE_ENV)
-        //             .getChildItems(/\.(js|json)$/g)
-        //         configMap = config.loadConfigItems(configMap, scopeConfigItems)
-        //     }
-        // } catch (e) {
-        //     throw e
-        // }
+                const scopeConfigItems = __(configPath, process.env.NODE_ENV)
+                    .getChildItems(/\.(js|json)$/g)
+                this.loadConfigItems(configMap, scopeConfigItems)
+            }
+        } catch (e) {
+            throw e
+        }
 
         return configMap
     }
@@ -91,10 +91,7 @@ class Dcfg {
             const isChildPath = /^((?!\.\.\/).)*$/g.test(
                 path.relative(basePath, nodeModulePath)
             )
-
-            if (!isChildPath) {
-                return
-            }
+            if (!isChildPath) return
 
             try {
                 const envFile = path.resolve(basePath, '.env')
@@ -110,6 +107,9 @@ class Dcfg {
                     path.dirname(nodeModulePath), this.evalName
                 )
 
+                if (_.isEqual(basePath, configPath)) return
+                if (!/^.*\/config$/g.test(configPath)) return
+
                 if (fs.existsSync(configPath)) {
                     _.extend(this._values, this.parse(configPath))
                 }
@@ -117,11 +117,6 @@ class Dcfg {
                 throw e
             }
         }, this)
-
-        // _.extend(
-        //     this._values,
-        //     config.parse(baseConfigPath)
-        // )
 
         return this
     }
