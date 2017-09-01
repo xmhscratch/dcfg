@@ -3,6 +3,7 @@ const CouchDbStore = Dcfg.CouchDbStore
 const prettyoutput = require('prettyoutput')
 
 const config = new Dcfg({
+    dbs: ['tests', 'shared'],
     baseDir: null,
     evalName: 'config',
     store: new CouchDbStore({
@@ -16,4 +17,4 @@ const config = new Dcfg({
     })
 })
 
-console.log(prettyoutput(config))
+// console.log(prettyoutput(config))

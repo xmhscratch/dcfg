@@ -9,9 +9,13 @@ const path = require('path')
 const fs = require('fs')
 const EventEmitter = require('events')
 
+const Adapter = require('./adapter')
+
 class Dcfg extends EventEmitter {
 
     constructor(options = {}, done = _.noop) {
+        super()
+
         this._values = {}
 
         const nodeEnv = this.getNodeEnv()
@@ -22,8 +26,6 @@ class Dcfg extends EventEmitter {
             evalName: 'config',
             store: null,
         })
-
-        this._adapter = new Adapter(this.store)
 
         if (!global._dcfg_loaded) {
             this.initialize(done)
@@ -133,17 +135,19 @@ class Dcfg extends EventEmitter {
             }
         }, this)
 
-        async.mapSeries(this.dbs, (dbName, callback) => {
-            return this._adapter(dbName, nodeEnv)
-                .read((error, values) => {
-                    if (error) {
-                        this.emit('error', error)
-                    } else {
-                        _.extend(this._values, values)
-                    }
+        const nodeEnv = this.getNodeEnv()
+        const adapter = new Adapter(this.store)
 
-                    return callback(null, error)
-                })
+        async.mapSeries(this.dbs, (dbName, callback) => {
+            return adapter.read(dbName, nodeEnv, (error, values) => {
+                if (error) {
+                    this.emit('error', error)
+                } else {
+                    _.extend(this._values, values)
+                }
+
+                return callback(null, error)
+            })
         }, (noop, error) => {
             this.emit('ready', this._values)
             return done(error, this._values)
