@@ -27,7 +27,9 @@ class Dcfg extends EventEmitter {
             store: null,
         })
 
-        this._adapter = new Adapter(this.store)
+        if (this.store) {
+            this._adapter = new Adapter(this.store)
+        }
 
         if (!global._dcfg_loaded) {
             this.initialize(done)
@@ -144,7 +146,7 @@ class Dcfg extends EventEmitter {
 
         const nodeEnv = this.getNodeEnv()
 
-        async.mapSeries(this.dbs, (dbName, callback) => {
+        this._adapter ? async.mapSeries(this.dbs, (dbName, callback) => {
             return this._adapter
                 .read(dbName, nodeEnv, (error, values) => {
                     if (error) {
@@ -158,7 +160,7 @@ class Dcfg extends EventEmitter {
         }, (noop, error) => {
             this.emit('ready', this._values)
             return done(error, this._values)
-        })
+        }) : this.emit('ready', this._values)
 
         return this
     }
@@ -171,12 +173,12 @@ class Dcfg extends EventEmitter {
         const nodeEnv = this.getNodeEnv()
 
         // save to private config db
-        this._adapter.write(
+        this._adapter ? this._adapter.write(
             _.last(this.dbs), nodeEnv, keyPath, value,
             (error, results) => {
                 this.emit('change', keyPath, value)
             }
-        )
+        ) : false
 
         return _.set(this._values, keyPath, value)
     }
