@@ -32,7 +32,10 @@ class Dcfg extends EventEmitter {
         }
 
         if (!global._dcfg_loaded) {
-            this.initialize(done)
+            this.once('ready', () => {
+                return done(null, this._values)
+            })
+            this.initialize()
             global._dcfg_loaded = true
         }
 
@@ -105,7 +108,7 @@ class Dcfg extends EventEmitter {
         return process.env.NODE_ENV || 'local'
     }
 
-    initialize(done) {
+    initialize() {
         const basePath = this.getBasePath()
 
         _.forEach(process.mainModule.paths, (nodeModulePath) => {
@@ -157,9 +160,8 @@ class Dcfg extends EventEmitter {
 
                     return callback(null, error)
                 })
-        }, (noop, error) => {
+        }, () => {
             this.emit('ready', this._values)
-            return done(error, this._values)
         }) : this.emit('ready', this._values)
 
         return this
