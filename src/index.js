@@ -27,6 +27,8 @@ class Dcfg extends EventEmitter {
             store: null,
         })
 
+        this._adapter = new Adapter(this.store)
+
         if (!global._dcfg_loaded) {
             this.initialize(done)
             global._dcfg_loaded = true
@@ -136,18 +138,18 @@ class Dcfg extends EventEmitter {
         }, this)
 
         const nodeEnv = this.getNodeEnv()
-        const adapter = new Adapter(this.store)
 
         async.mapSeries(this.dbs, (dbName, callback) => {
-            return adapter.read(dbName, nodeEnv, (error, values) => {
-                if (error) {
-                    this.emit('error', error)
-                } else {
-                    _.extend(this._values, values)
-                }
+            return this._adapter
+                .read(dbName, nodeEnv, (error, values) => {
+                    if (error) {
+                        this.emit('error', error)
+                    } else {
+                        _.extend(this._values, values)
+                    }
 
-                return callback(null, error)
-            })
+                    return callback(null, error)
+                })
         }, (noop, error) => {
             this.emit('ready', this._values)
             return done(error, this._values)
@@ -161,15 +163,31 @@ class Dcfg extends EventEmitter {
     }
 
     set(path, value) {
-        this._adapter(
-            // save to private config db
-            _.last(this.dbs),
-            // surfix enviroment
-            this.getNodeEnv()
-        ).write(path, value)
+        const nodeEnv = this.getNodeEnv()
 
-        this.emit('saved', path, value)
+        // save to private config db
+        this._adapter.write(
+            _.last(this.dbs), nodeEnv, path, value,
+            (error, results) => {
+                this.emit('change', path, value)
+            }
+        )
+
         return _.set(this._values, path, value)
+    }
+
+    unset(path) {
+        const nodeEnv = this.getNodeEnv()
+
+        // save to private config db
+        this._adapter.delete(
+            _.last(this.dbs), nodeEnv, path,
+            (error, results) => {
+                this.emit('delete', path)
+            }
+        )
+
+        return _.set(this._values, path, undefined)
     }
 }
 

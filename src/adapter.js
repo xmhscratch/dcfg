@@ -11,8 +11,8 @@ class Adapter {
     read(name, nodeEnv, done = _.noop) {
         const dbName = `${name}_${nodeEnv}`
 
-        this._load(dbName, (error, results) => {
-            this.store.read(dbName, (error, results) => {
+        this._load(dbName, () => {
+            this.store.read((error, results) => {
                 return done(error, unflatten(results))
             })
         })
@@ -20,12 +20,43 @@ class Adapter {
         return this
     }
 
-    _load(dbName, done = _.noop) {
-        this.store.load(dbName, (error, isCreated) => {
-            return done(error, isCreated)
+    write(name, nodeEnv, keyName, value, done = _.noop) {
+        const dbName = `${name}_${nodeEnv}`
+
+        this._load(dbName, () => {
+            return this.store.write(
+                keyName, value,
+                (error, results) => {
+                    return done(error, unflatten(results))
+                }
+            )
         })
 
         return this
+    }
+
+    delete(name, nodeEnv, keyName, value, done = _.noop) {
+        const dbName = `${name}_${nodeEnv}`
+
+        this._load(dbName, () => {
+            return this.store.delete(
+                keyName, value,
+                (error, results) => {
+                    return done(error, unflatten(results))
+                }
+            )
+        })
+
+        return this
+    }
+
+    _load(dbName, done = _.noop) {
+        return this.store.load(dbName, (error, results) => {
+            if (error) {
+                throw error
+            }
+            return done()
+        })
     }
 }
 

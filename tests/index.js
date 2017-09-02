@@ -2,8 +2,8 @@ const Dcfg = require('../')
 const CouchDbStore = Dcfg.CouchDbStore
 const prettyoutput = require('prettyoutput')
 
-const config = new Dcfg({
-    dbs: ['tests', 'shared'],
+const dcfg = new Dcfg({
+    dbs: ['tests'],
     baseDir: null,
     evalName: 'config',
     store: new CouchDbStore({
@@ -17,4 +17,8 @@ const config = new Dcfg({
     })
 })
 
-// console.log(prettyoutput(config))
+dcfg.on('ready', (config) => {
+    // console.log(config)
+    // dcfg.unset('foo')
+    // dcfg.set('foo', 'bar23123')
+})

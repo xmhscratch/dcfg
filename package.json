@@ -26,7 +26,8 @@
     "flat": "^4.0.0",
     "flatory": "0.0.4",
     "lodash": "^4.17.4",
-    "node-couchdb": "^1.2.0"
+    "node-couchdb": "^1.2.0",
+    "node-couchdb-plugin-memory": "0.0.2"
   },
   "devDependencies": {
     "prettyoutput": "^1.1.1"
