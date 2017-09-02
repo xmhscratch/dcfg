@@ -137,12 +137,12 @@ class Dcfg extends EventEmitter {
             }
         }, this)
 
-        const nodeEnv = this.getNodeEnv()
-
         if (_.isEmpty(this.dbs)) {
             this.emit('ready', this._values)
             return this
         }
+
+        const nodeEnv = this.getNodeEnv()
 
         async.mapSeries(this.dbs, (dbName, callback) => {
             return this._adapter
