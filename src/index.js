@@ -163,36 +163,36 @@ class Dcfg extends EventEmitter {
         return this
     }
 
-    get(path) {
-        return _.get(this._values, path)
+    get(keyPath, defaultValue) {
+        return _.get(this._values, keyPath, defaultValue)
     }
 
-    set(path, value) {
+    set(keyPath, value) {
         const nodeEnv = this.getNodeEnv()
 
         // save to private config db
         this._adapter.write(
-            _.last(this.dbs), nodeEnv, path, value,
+            _.last(this.dbs), nodeEnv, keyPath, value,
             (error, results) => {
-                this.emit('change', path, value)
+                this.emit('change', keyPath, value)
             }
         )
 
-        return _.set(this._values, path, value)
+        return _.set(this._values, keyPath, value)
     }
 
-    unset(path) {
+    unset(keyPath) {
         const nodeEnv = this.getNodeEnv()
 
         // save to private config db
         this._adapter.delete(
-            _.last(this.dbs), nodeEnv, path,
+            _.last(this.dbs), nodeEnv, keyPath,
             (error, results) => {
-                this.emit('delete', path)
+                this.emit('delete', keyPath)
             }
         )
 
-        return _.set(this._values, path, undefined)
+        return _.set(this._values, keyPath, undefined)
     }
 }
 
