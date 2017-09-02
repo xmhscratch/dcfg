@@ -1,5 +1,5 @@
 # dcfg
-Distributed configuration between multiple nodejs applications
+Configuration manager for distributed nodejs applications
 
 How to use
 
