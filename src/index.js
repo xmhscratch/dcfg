@@ -47,8 +47,8 @@ class Dcfg extends EventEmitter {
             const basePath = path.dirname(nodeModulePath)
             const packageFile = path.resolve(basePath, 'package.json')
 
-            return fs.existsSync(nodeModulePath)
-                && fs.existsSync(packageFile)
+            return fs.existsSync(nodeModulePath) &&
+                fs.existsSync(packageFile)
         }, this)
 
         return path.dirname(nodeModuleBasePath) || __dirname
@@ -85,7 +85,8 @@ class Dcfg extends EventEmitter {
         const configMap = {}
 
         try {
-            const baseConfigItems = __(configPath).getChildItems(/\.(js|json)$/g)
+            const baseConfigItems = __(configPath)
+                .getChildItems(/.*\.js$|.*\.json$/gi)
             this.loadConfigItems(configMap, baseConfigItems)
 
             const nodeEnv = this.getNodeEnv()
@@ -94,7 +95,7 @@ class Dcfg extends EventEmitter {
                 fs.existsSync(scopeDir)
 
                 const scopeConfigItems = __(configPath, nodeEnv)
-                    .getChildItems(/\.(js|json)$/g)
+                    .getChildItems(/.*\.js$|.*\.json$/gi)
                 this.loadConfigItems(configMap, scopeConfigItems)
             }
         } catch (e) {
@@ -127,7 +128,7 @@ class Dcfg extends EventEmitter {
                     })
                 }
 
-                const configPath =  path.resolve(
+                const configPath = path.resolve(
                     path.dirname(nodeModulePath), this.evalName
                 )
 
