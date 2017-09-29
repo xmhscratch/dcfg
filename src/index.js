@@ -86,16 +86,16 @@ class Dcfg extends EventEmitter {
 
         try {
             const baseConfigItems = __(configPath)
-                .getChildItems(/.*\.js$|.*\.json$/gi)
+                .getChildItems(/\.js$|\.json$/i)
             this.loadConfigItems(configMap, baseConfigItems)
 
             const nodeEnv = this.getNodeEnv()
-            if (!_.isEqual(nodeEnv, "local")) {
+            if (!_.isEqual(nodeEnv, 'local')) {
                 const scopeDir = path.join(configPath, nodeEnv)
                 fs.existsSync(scopeDir)
 
                 const scopeConfigItems = __(configPath, nodeEnv)
-                    .getChildItems(/.*\.js$|.*\.json$/gi)
+                    .getChildItems(/\.js$|\.json$/i)
                 this.loadConfigItems(configMap, scopeConfigItems)
             }
         } catch (e) {
@@ -133,7 +133,7 @@ class Dcfg extends EventEmitter {
                 )
 
                 if (_.isEqual(basePath, configPath)) return
-                if (!/^.*\/config$/g.test(configPath)) return
+                if (!/^.*\/config$/gi.test(configPath)) return
 
                 if (fs.existsSync(configPath)) {
                     _.extend(this._values, this.parse(configPath))
