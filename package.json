@@ -1,5 +1,5 @@
 {
-  "name": "@claimh/dcfg",
+  "name": "dcfg",
   "version": "1.0.0",
   "description": "Distributed configuration between multiple nodejs applications",
   "main": "index.js",
