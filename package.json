@@ -1,11 +1,12 @@
 {
-  "name": "dcfg",
+  "name": "@claimh/dcfg",
   "version": "1.0.0",
   "description": "Distributed configuration between multiple nodejs applications",
   "main": "index.js",
   "scripts": {
     "test": "node ./tests/index"
   },
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/xmhscratch/dcfg.git"
