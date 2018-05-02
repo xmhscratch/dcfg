@@ -6,7 +6,9 @@
   "scripts": {
     "test": "node ./tests/index"
   },
-  "private": true,
+  "publishConfig": {
+    "registry": "http://registry.cicd.claimh.com:6000/"
+  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/xmhscratch/dcfg.git"
